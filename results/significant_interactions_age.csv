@@ -1,0 +1,10 @@
+Variable,Coefficient,p-value
+autonomy_interesting:age_group[T.21-30],-0.145,0.033
+autonomy_options:age_group[T.51+],0.399,0.008
+competence_matched:age_group[T.51+],-0.299,0.004
+related_fulfilling:age_group[T.21-30],0.213,0.04
+related_fulfilling:age_group[T.31-40],0.243,0.028
+related_not_close:age_group[T.41-50],0.199,0.003
+enjoyment_attention:age_group[T.31-40],0.122,0.027
+enjoymen_boring:age_group[T.31-40],-0.148,0.037
+enjoymen_boring:age_group[T.41-50],-0.19,0.03
