@@ -1,7 +1,7 @@
-#Multiple Linear Regression (MLR)
-#1. Using both Subjective Experience (SE) and Gameplay Time as input variables
 
 ```python
+#Multiple Linear Regression (MLR)
+#1. Using both Subjective Experience (SE) and Gameplay Time as input variables
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import make_scorer, mean_squared_error, r2_score
