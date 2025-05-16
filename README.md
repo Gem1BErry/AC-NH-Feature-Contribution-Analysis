@@ -4,8 +4,6 @@ This repository contains the complete code and data used in my master’s thesis
 
 > **"The Contribution of Subjective Experiences in Video Games to Players’ Well-Being: A Case Study of Animal Crossing: New Horizons"**
 
-It explores how different subjective experience features—such as autonomy, competence, relatedness, enjoyment, and extrinsic motivation—contribute to players’ well-being, and whether these relationships are moderated by demographic factors like gender and age.
-
 📌 This repository link is referenced in the thesis to ensure transparency, replicability, and academic integrity.
 
 ---
@@ -14,12 +12,9 @@ It explores how different subjective experience features—such as autonomy, com
 
 The research investigates:
 - How well subjective experience features predict players’ well-being
-- Whether game duration ("Hours") improves prediction performance
-- Which machine learning model performs best (Linear Regression, Random Forest, XGBoost)
+- Which machine learning model performs best
 - How feature importance varies, using SHAP analysis
-- Whether gender and age moderate the relationship using Hierarchical Linear Modeling (HLM)
-
----
+- Whether gender and age moderate the relationship using Hierarchical Linear Modeling
 
 ---
 
@@ -32,8 +27,6 @@ The research investigates:
 ---
 
 ## 💡 How to Use
-
-This repository is **not designed for direct execution**, but provides **step-by-step code walkthroughs** in markdown format.
 
 You can view the analysis process by reading the files below:
 
