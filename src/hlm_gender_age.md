@@ -1,4 +1,4 @@
-```pythonAdd commentMore actions
+```python
 from statsmodels.regression.mixed_linear_model import MixedLM
 
 # Define predictors and outcome variable
@@ -20,22 +20,22 @@ gender_labels = {
 }
 df['GenderGroup'] = df['sex'].map(gender_labels)
 
-# Create interaction formula
+# Create interaction formula for gender
 X_formula = " + ".join(X_columns)
 interaction_terms = " + ".join([f'{col}:GenderGroup' for col in X_columns])
 formula_with_interaction = f"{y_column} ~ {X_formula} + GenderGroup + {interaction_terms}"
 
-# Fit the HLM model
+# Fit the hierarchical linear model (HLM) with gender interaction
 model_with_interaction = MixedLM.from_formula(formula_with_interaction, data=df, groups=df["GenderGroup"])
 result_with_interaction = model_with_interaction.fit()
 
-# Extract interaction terms with p < 0.05
+# Extract interaction terms with p-values less than 0.05
 coefficients = result_with_interaction.params
 p_values = result_with_interaction.pvalues
 interaction_variables = [var for var in coefficients.index if 'GenderGroup' in var]
 significant_interactions = [var for var in interaction_variables if p_values[var] < 0.05]
 
-# Manually construct full slope per group from main effect + interaction term
+# Manually construct full slopes per gender group from main effect + interaction term
 base_vars = ['competence_capable', 'competence_competent', 'related_not_close', 'extrinsic_escape']
 
 gender_map = {
@@ -61,21 +61,21 @@ bins = [0, 20, 30, 40, 50, 80]
 labels = ['0-20', '21-30', '31-40', '41-50', '51+']
 df['age_group'] = pd.cut(df['age'], bins=bins, labels=labels, right=True)
 
-# Construct interaction formula
+# Create interaction formula for age group
 interaction_terms = " + ".join([f'{col}:age_group' for col in X_columns])
 formula_with_interaction = f"{y_column} ~ {X_formula} + age_group + {interaction_terms}"
 
-# Fit HLM model
+# Fit the HLM with age group interaction
 model_with_interaction = MixedLM.from_formula(formula_with_interaction, data=df, groups=df["age_group"])
 result_with_interaction = model_with_interaction.fit()
 
-# Extract significant interaction terms
+# Extract significant interaction terms for age group
 coefficients = result_with_interaction.params
 p_values = result_with_interaction.pvalues
 interaction_variables = [var for var in coefficients.index if 'age_group' in var]
 significant_interactions = [var for var in interaction_variables if p_values[var] < 0.05]
 
-# List of selected variables with significant moderation
+# List of variables with significant moderation by age group
 base_vars = [
     'autonomy_interesting', 'autonomy_options', 'competence_matched',
     'related_fulfilling', 'related_not_close', 'enjoyment_attention', 'enjoymen_boring'
@@ -100,3 +100,4 @@ for var in base_vars:
             plot_data.append({'Variable': var, 'AgeGroup': age_label, 'Coefficient': coef})
 
 plot_df = pd.DataFrame(plot_data)
+
