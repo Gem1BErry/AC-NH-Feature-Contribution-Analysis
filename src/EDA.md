@@ -1,3 +1,4 @@
+```python
 # --- 1. 性别变量映射 ---
 gender_map = {
     1: 'Male',
@@ -26,11 +27,11 @@ plt.show()
 # --- 5. 连续变量分布直方图 ---
 cont_vars = [
     "autonomy_freedom", "autonomy_interesting", "autonomy_options",
-        "competence_matched", "competence_capable", "competence_competent",
-        "related_important", "related_fulfilling", "related_not_close",
-        "enjoyment_fun", "enjoyment_attention", "enjoymen_boring", "enjoyment_enjoyed",
-        "extrinsic_avoid", "extrinsic_forget", "extrinsic_compelled", "extrinsic_escape",
-        "Hours", 'happiness_value'
+    "competence_matched", "competence_capable", "competence_competent",
+    "related_important", "related_fulfilling", "related_not_close",
+    "enjoyment_fun", "enjoyment_attention", "enjoymen_boring", "enjoyment_enjoyed",
+    "extrinsic_avoid", "extrinsic_forget", "extrinsic_compelled", "extrinsic_escape",
+    "Hours", 'happiness_value'
 ]
 
 for var in cont_vars:
