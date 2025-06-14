@@ -56,7 +56,6 @@ r2_mlr = r2_score(y_test, y_pred_mlr)
 
 print(f"MLR Test MSE: {mse_mlr:.4f}")
 print(f"MLR Test R²: {r2_mlr:.4f}")
-
 # --- 2. 随机森林训练及预测 ---
 rf_model = RandomForestRegressor(
     n_estimators=250,
