@@ -1,141 +1,104 @@
-
-```python
-#Multiple Linear Regression (MLR)
-#1. Using both Subjective Experience (SE) and Gameplay Time as input variables
-from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import cross_val_score
-from sklearn.metrics import make_scorer, mean_squared_error, r2_score
+import pandas as pd
 import numpy as np
 
-# Define features and target
-X = df[["autonomy_freedom", "autonomy_interesting", "autonomy_options",
-        "competence_matched", "competence_capable", "competence_competent",
-        "related_important", "related_fulfilling", "related_not_close",
-        "enjoyment_fun", "enjoyment_attention", "enjoymen_boring", "enjoyment_enjoyed",
-        "extrinsic_avoid", "extrinsic_forget", "extrinsic_compelled", "extrinsic_escape",
-        "Hours"]]
-y = df['happiness_value']
-
-# Initialize model
-model = LinearRegression()
-
-# Define scoring metrics
-scoring = {
-    'r2': 'r2',
-    'neg_mse': 'neg_mean_squared_error',
-    'neg_rmse': make_scorer(lambda y_true, y_pred: -np.sqrt(mean_squared_error(y_true, y_pred)))
-}
-
-# Perform 5-fold cross-validation
-cv_results = {metric: cross_val_score(model, X, y, cv=5, scoring=score) for metric, score in scoring.items()}
-
-
-#2. Using only Gameplay Time as input
-X = df[["Hours"]]
-y = df['happiness_value']
-
-model = LinearRegression()
-
-scoring = {
-    'r2': 'r2',
-    'neg_mse': 'neg_mean_squared_error',
-    'neg_rmse': make_scorer(lambda y_true, y_pred: -np.sqrt(mean_squared_error(y_true, y_pred)))
-}
-
-cv_results = {metric: cross_val_score(model, X, y, cv=5, scoring=score) for metric, score in scoring.items()}
-
-#3. Using only Gameplay Time as input
-X = df[["autonomy_freedom", "autonomy_interesting", "autonomy_options",
-        "competence_matched", "competence_capable", "competence_competent",
-        "related_important", "related_fulfilling", "related_not_close",
-        "enjoyment_fun", "enjoyment_attention", "enjoymen_boring", "enjoyment_enjoyed",
-        "extrinsic_avoid", "extrinsic_forget", "extrinsic_compelled", "extrinsic_escape"]]
-y = df['happiness_value']
-
-model = LinearRegression()
-
-scoring = {
-    'r2': 'r2',
-    'neg_mse': 'neg_mean_squared_error',
-    'neg_rmse': make_scorer(lambda y_true, y_pred: -np.sqrt(mean_squared_error(y_true, y_pred)))
-}
-
-cv_results = {metric: cross_val_score(model, X, y, cv=5, scoring=score) for metric, score in scoring.items()}
-
-
-#XGBoost Regression with Hyperparameter Tuning
-import xgboost as xgb
-from sklearn.model_selection import GridSearchCV, KFold
-
-X = df[["autonomy_freedom", "autonomy_interesting", "autonomy_options",
-        "competence_matched", "competence_capable", "competence_competent",
-        "related_important", "related_fulfilling", "related_not_close",
-        "enjoyment_fun", "enjoyment_attention", "enjoymen_boring", "enjoyment_enjoyed",
-        "extrinsic_avoid", "extrinsic_forget", "extrinsic_compelled", "extrinsic_escape"]]
-y = df['happiness_value']
-
-param_grid = {
-    "n_estimators": [100, 200, 300],
-    "max_depth": [3, 5, 7],
-    "learning_rate": [0.01, 0.1, 0.2],
-    "subsample": [0.6, 0.8, 1.0],
-    "colsample_bytree": [0.6, 0.8, 1.0]
-}
-
-scoring = {
-    "neg_mse": make_scorer(mean_squared_error, greater_is_better=False),
-    "r2": make_scorer(r2_score)
-}
-
-search = GridSearchCV(
-    estimator=xgb.XGBRegressor(objective="reg:squarederror", random_state=42),
-    param_grid=param_grid,
-    cv=KFold(n_splits=5, shuffle=True, random_state=42),
-    scoring=scoring,
-    refit="r2",
-    n_jobs=-1
-)
-
-search.fit(X, y)
-
-# Extract best parameters and scores
-best_params = search.best_params_
-best_r2 = search.best_score_
-best_mse = -search.cv_results_["mean_test_neg_mse"][search.best_index_]
-
-
-#Random Forest Regression with Grid Search
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import cross_validate
+from xgboost import XGBRegressor
+import statsmodels.api as sm
 
-X = df[["autonomy_freedom", "autonomy_interesting", "autonomy_options",
-        "competence_matched", "competence_capable", "competence_competent",
-        "related_important", "related_fulfilling", "related_not_close",
-        "enjoyment_fun", "enjoyment_attention", "enjoymen_boring", "enjoyment_enjoyed",
-        "extrinsic_avoid", "extrinsic_forget", "extrinsic_compelled", "extrinsic_escape"]]
+# --- 性别合并处理 ---
+def recode_sex(x):
+    if x == 1:
+        return 1  # Male
+    elif x == 2:
+        return 2  # Female
+    else:
+        return 3  # Non-binary / Prefer not to say 合并3和4
+
+df['sex'] = df['sex'].apply(recode_sex)
+
+# --- 创建分层抽样列，包含年龄组和合并后的性别 ---
+df['age_group_stratify'] = pd.cut(df['age'], bins=[0, 20, 30, 40, 50, 80],
+                                  labels=['0-20', '21-30', '31-40', '41-50', '51+'])
+df['stratify_col'] = df['sex'].astype(str) + '_' + df['age_group_stratify'].astype(str)
+
+# --- 定义特征和目标变量 ---
+X_features = [
+    'age', 'sex',
+    'autonomy_freedom', 'autonomy_interesting', 'autonomy_options',
+    'competence_matched', 'competence_capable', 'competence_competent',
+    'related_important', 'related_fulfilling', 'related_not_close',
+    'enjoyment_fun', 'enjoyment_attention', 'enjoymen_boring', 'enjoyment_enjoyed',
+    'extrinsic_avoid', 'extrinsic_forget', 'extrinsic_compelled', 'extrinsic_escape',
+    'Hours'
+]
+X = df[X_features]
 y = df['happiness_value']
 
-param_grid = {
-    'n_estimators': [100, 200, 300],
-    'max_depth': [None, 10, 20],
-    'min_samples_split': [2, 5, 10],
-    'min_samples_leaf': [1, 2, 4]
-}
-
-grid_search = GridSearchCV(
-    estimator=RandomForestRegressor(random_state=42),
-    param_grid=param_grid,
-    cv=5,
-    scoring='r2',
-    n_jobs=-1
+# --- 数据划分：训练集80%，测试集20% ---
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.20, random_state=42, stratify=df['stratify_col']
 )
 
-grid_search.fit(X, y)
+print(f"Train size: {len(X_train)}; Test size: {len(X_test)}")
 
-# Final evaluation with best parameters
-final_model = RandomForestRegressor(**grid_search.best_params_, random_state=42)
-cv_results = cross_validate(final_model, X, y, cv=5, scoring=['r2', 'neg_mean_squared_error'], n_jobs=-1)
+# --- 1. MLR模型训练及稳健标准误估计 ---
+X_train_sm = sm.add_constant(X_train)
+X_test_sm = sm.add_constant(X_test)
 
-mean_r2 = np.mean(cv_results['test_r2'])
-mean_mse = -np.mean(cv_results['test_neg_mean_squared_error'])
+mlr_model = sm.OLS(y_train, X_train_sm).fit(cov_type='HC3')
 
+y_pred_mlr = mlr_model.predict(X_test_sm)
+
+mse_mlr = mean_squared_error(y_test, y_pred_mlr)
+r2_mlr = r2_score(y_test, y_pred_mlr)
+
+print(f"MLR Test MSE: {mse_mlr:.4f}")
+print(f"MLR Test R²: {r2_mlr:.4f}")
+
+# --- 2. 随机森林训练及预测 ---
+rf_model = RandomForestRegressor(
+    n_estimators=250,
+    max_depth=10,
+    min_samples_split=5,
+    min_samples_leaf=5,
+    random_state=42
+)
+rf_model.fit(X_train, y_train)
+y_pred_rf = rf_model.predict(X_test)
+
+mse_rf = mean_squared_error(y_test, y_pred_rf)
+r2_rf = r2_score(y_test, y_pred_rf)
+
+print(f"Random Forest Test MSE: {mse_rf:.4f}")
+print(f"Random Forest Test R²: {r2_rf:.4f}")
+
+# --- 3. XGBoost训练及预测 ---
+xgb_model = XGBRegressor(
+    n_estimators=100,
+    max_depth=4,
+    learning_rate=0.05,
+    subsample=0.7,
+    colsample_bytree=0.7,
+    min_child_weight=1,
+    objective='reg:squarederror',
+    random_state=42
+)
+xgb_model.fit(X_train, y_train)
+y_pred_xgb = xgb_model.predict(X_test)
+
+mse_xgb = mean_squared_error(y_test, y_pred_xgb)
+r2_xgb = r2_score(y_test, y_pred_xgb)
+
+print(f"XGBoost Test MSE: {mse_xgb:.4f}")
+print(f"XGBoost Test R²: {r2_xgb:.4f}")
+
+# --- 汇总结果 ---
+results = pd.DataFrame({
+    'Model': ['MLR', 'Random Forest', 'XGBoost'],
+    'Test MSE': [mse_mlr, mse_rf, mse_xgb],
+    'Test R²': [r2_mlr, r2_rf, r2_xgb]
+})
+print("\nFinal Test Results:")
+print(results)
