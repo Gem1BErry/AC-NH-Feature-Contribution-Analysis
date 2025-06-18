@@ -154,3 +154,88 @@ else:
     # 自动调整布局
     plt.tight_layout()
     plt.show()
+-------------------------------------------------------------------------------------
+
+# 准备 X_test_grouped，添加分组信息
+X_test_grouped = X_test.copy()
+# 确保使用原始DataFrame的索引来安全地匹配分组信息
+X_test_grouped['sex'] = df.loc[X_test.index, 'sex'] # 假设原始列名为 'sex'
+X_test_grouped['age_group'] = df.loc[X_test.index, 'age_group_stratify']
+
+# 为了MLR模型，准备一个带有常数项的测试集
+X_test_sm = sm.add_constant(X_test)
+
+# --- 2. 定义模型字典，方便循环 ---
+# 将模型和它们的名称存储在一个字典中
+models = {
+    "MLR": mlr_model,
+    "Random Forest": rf_model,
+    "XGBoost": xgb_model
+}
+# 使用原始的数值编码进行筛选，标签仅用于最终表格
+gender_groups_map = {1: 'Male', 2: 'Female', 3: 'Other'}
+age_groups = sorted(X_test_grouped['age_group'].unique().tolist())
+
+# --- 4. 循环遍历模型和子组，计算性能 ---
+performance_results = []
+
+# 外层循环：遍历每一个模型
+for model_name, model in models.items():
+    print(f"--- Evaluating Model: {model_name} ---")
+
+    # 定义所有要评估的分组
+    # 性别分组
+    gender_subgroups = [
+        (('Gender', label), (X_test_grouped['sex'] == code))
+        for code, label in gender_groups_map.items()
+    ]
+    # 年龄分组
+    age_subgroups = [
+        (('Age', label), (X_test_grouped['age_group'] == label))
+        for label in age_groups
+    ]
+    all_groups = gender_subgroups + age_subgroups
+
+    for (group_type, group_name), subgroup_filter in all_groups:
+
+        X_test_sub = X_test_grouped[subgroup_filter]
+        y_test_sub = y_test[subgroup_filter]
+
+        if len(X_test_sub) > 0:
+            if model_name == "MLR":
+                X_test_sub_features = X_test_sub[X_train.columns]
+                X_test_sub_final = sm.add_constant(X_test_sub_features, has_constant='add')
+                y_pred_sub = model.predict(X_test_sub_final)
+            else:
+                X_test_sub_features = X_test_sub[X_features]
+                y_pred_sub = model.predict(X_test_sub_features)
+
+            mse = mean_squared_error(y_test_sub, y_pred_sub)
+            r2 = r2_score(y_test_sub, y_pred_sub)
+
+            performance_results.append({
+                'Model': model_name,
+                'Group Type': group_type,
+                'Group Name': group_name,
+                'N_Samples': len(X_test_sub),
+                'MSE': mse,
+                'R2': r2
+            })
+
+# --- 5. 将结果转换为一个清晰的、合并了 MSE 和 R2 的表格 ---
+performance_df = pd.DataFrame(performance_results)
+
+print("\n--- Combined Performance Summary Table (MSE and R2) ---")
+
+# 使用 set_index 和 unstack 来创建多层列表格
+performance_pivot = performance_df.set_index(['Group Type', 'Group Name', 'N_Samples', 'Model'])\
+                                  .unstack('Model') # 将 'Model' 索引层转换为列
+
+# 为了更好的可读性，交换列的层级，让模型在最上层
+performance_pivot = performance_pivot.swaplevel(0, 1, axis=1)
+
+# 按模型名称对列进行排序，使输出更整洁
+performance_pivot.sort_index(axis=1, level=0, inplace=True)
+
+
+print(performance_pivot.to_string(float_format="%.4f"))
