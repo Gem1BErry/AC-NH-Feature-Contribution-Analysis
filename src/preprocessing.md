@@ -1,3 +1,4 @@
+```python
 # Aggregate gameplay duration per player and convert seconds to hours
 gt = pd.read_csv('telem_data.txt', sep='\t')[['hashed_id', 'duration']]
 gt = gt.rename(columns={'hashed_id': 'code', 'duration': 'Hours'})
@@ -65,3 +66,4 @@ np.random.seed(61)
 player_ids = [random_id(4) for _ in range(imputed_data.shape[0])]
 
 imputed_data.insert(0, 'player_id', player_ids)
+```
