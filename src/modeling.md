@@ -1,21 +1,17 @@
-# --- Gender variable mapping ---
 def recode_sex(x):
     if x == 1:
-        return 1  # Male
+        return 1
     elif x == 2:
-        return 2  # Female
+        return 2
     else:
-        return 3  # Non-binary / Prefer not to say
+        return 3
 
 df['sex'] = df['sex'].apply(recode_sex)
-
-# --- Age grouping and stratification column ---
 bins = [0, 20, 30, 40, 50, 80]
 labels = ['0-20', '21-30', '31-40', '41-50', '51+']
 df['age_group_stratify'] = pd.cut(df['age'], bins=bins, labels=labels)
 df['stratify_col'] = df['sex'].astype(str) + '_' + df['age_group_stratify'].astype(str)
 
-# --- Define features and target ---
 X_features = [
     'age', 'sex',
     'autonomy_freedom', 'autonomy_interesting', 'autonomy_options',
@@ -28,12 +24,10 @@ X_features = [
 X = df[X_features]
 y = df['happiness_value']
 
-# --- Train-test split ---
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.20, random_state=42, stratify=df['stratify_col']
 )
 
-# --- MLR model training with robust standard errors ---
 X_train_sm = sm.add_constant(X_train)
 X_test_sm = sm.add_constant(X_test)
 mlr_model = sm.OLS(y_train, X_train_sm).fit(cov_type='HC3')
@@ -41,7 +35,6 @@ y_pred_mlr = mlr_model.predict(X_test_sm)
 mse_mlr = mean_squared_error(y_test, y_pred_mlr)
 r2_mlr = r2_score(y_test, y_pred_mlr)
 
-# --- Random Forest training and prediction ---
 rf_model = RandomForestRegressor(
     n_estimators=250,
     max_depth=10,
@@ -54,7 +47,6 @@ y_pred_rf = rf_model.predict(X_test)
 mse_rf = mean_squared_error(y_test, y_pred_rf)
 r2_rf = r2_score(y_test, y_pred_rf)
 
-# --- XGBoost training and prediction ---
 xgb_model = XGBRegressor(
     n_estimators=100,
     max_depth=4,
@@ -70,15 +62,12 @@ y_pred_xgb = xgb_model.predict(X_test)
 mse_xgb = mean_squared_error(y_test, y_pred_xgb)
 r2_xgb = r2_score(y_test, y_pred_xgb)
 
-# --- Compile and display results ---
 results = pd.DataFrame({
     'Model': ['MLR', 'Random Forest', 'XGBoost'],
     'Test MSE': [mse_mlr, mse_rf, mse_xgb],
     'Test R²': [r2_mlr, r2_rf, r2_xgb]
 })
-print(results)
 
-# --- Visualization ---
 plt.figure(figsize=(10,6))
 sns.heatmap(df.isnull(), cbar=False, yticklabels=False, cmap='viridis')
 plt.title("Missing Data Heatmap")
@@ -118,3 +107,4 @@ for var in ['Hours', 'happiness_value']:
     sns.boxplot(x=df[var])
     plt.title(f"Boxplot of {var}")
     plt.show()
+```
