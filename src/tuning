@@ -1,26 +1,18 @@
-import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.ensemble import RandomForestRegressor
-from xgboost import XGBRegressor
-
-# --- 合并性别类别3和4 ---
+```python
+# --- Merge gender categories 3 and 4 into one ---
 def merge_gender(x):
-    if x in [3, 4]:
-        return 3  # 合并成一个类别，比如用3表示“Non-binary/Prefer not to say”
-    else:
-        return x
+    return 3 if x in [3, 4] else x  # 3 = Non-binary/Prefer not to say
 
 df['sex_merged'] = df['sex'].apply(merge_gender)
 
-# --- 年龄分组 ---
+# --- Age grouping ---
 df['age_group_stratify'] = pd.cut(df['age'], bins=[0, 20, 30, 40, 50, 80], 
                                   labels=['0-20', '21-30', '31-40', '41-50', '51+'])
 
-# --- 构造分层变量，基于合并后的性别和年龄组 ---
+# --- Create stratification column combining merged gender and age group ---
 df['stratify_col'] = df['sex_merged'].astype(str) + '_' + df['age_group_stratify'].astype(str)
 
-# --- 定义特征和目标变量 ---
+# --- Define features and target ---
 X_features = [
     'age', 'sex_merged',
     'autonomy_freedom', 'autonomy_interesting', 'autonomy_options',
@@ -33,19 +25,19 @@ X_features = [
 X = df[X_features]
 y = df['happiness_value']
 
-# --- 数据分割（80%训练，20%留作其他） ---
+# --- Split data: 80% training with stratification ---
 X_train, _, y_train, _ = train_test_split(
     X, y, train_size=0.80, random_state=42, stratify=df['stratify_col']
 )
 
-print(f"Using a training set of size: {len(X_train)} for hyperparameter tuning.")
+print(f"Training set size: {len(X_train)}")
 print("-" * 30)
 
-# --- 1. 随机森林调参 ---
+# --- 1. Random Forest hyperparameter tuning ---
 print("="*50)
-print("Starting REFINED Hyperparameter Tuning for Random Forest...")
+print("Random Forest Hyperparameter Tuning")
 
-param_grid_rf_refined = {
+param_grid_rf = {
     'n_estimators': [280, 320],
     'max_depth': [8, 12],
     'min_samples_split': [5, 10],
@@ -53,31 +45,20 @@ param_grid_rf_refined = {
 }
 
 rf = RandomForestRegressor(random_state=42)
-grid_search_rf = GridSearchCV(
-    estimator=rf,
-    param_grid=param_grid_rf_refined,
-    cv=5,
-    n_jobs=-1,
-    scoring='neg_mean_squared_error',
-    verbose=1
-)
+grid_rf = GridSearchCV(rf, param_grid_rf, cv=5, n_jobs=-1, scoring='neg_mean_squared_error', verbose=1)
+grid_rf.fit(X_train, y_train)
 
-grid_search_rf.fit(X_train, y_train)
-
-print("\n" + "="*40)
-print("RESULTS FOR RANDOM FOREST (TABLE 1)")
+print("\nRandom Forest Results")
 print("="*40)
-print("Optimal Hyperparameters Found:")
-print(grid_search_rf.best_params_)
-print(f"Best cross-validation MSE: {-grid_search_rf.best_score_:.4f}")
+print("Best params:", grid_rf.best_params_)
+print(f"Best CV MSE: {-grid_rf.best_score_:.4f}")
 print("="*40 + "\n")
 
-# --- 2. XGBoost调参 ---
+# --- 2. XGBoost hyperparameter tuning ---
 print("="*50)
-print("Starting REFINED Hyperparameter Tuning for XGBoost...")
-print("This may still take a few minutes...")
+print("XGBoost Hyperparameter Tuning")
 
-param_grid_xgb_refined = {
+param_grid_xgb = {
     'n_estimators': [100, 150],
     'max_depth': [3, 4],
     'learning_rate': [0.05, 0.1],
@@ -87,22 +68,13 @@ param_grid_xgb_refined = {
 }
 
 xgb = XGBRegressor(random_state=42, objective='reg:squarederror')
-grid_search_xgb = GridSearchCV(
-    estimator=xgb,
-    param_grid=param_grid_xgb_refined,
-    cv=5,
-    n_jobs=-1,
-    scoring='neg_mean_squared_error',
-    verbose=1
-)
+grid_xgb = GridSearchCV(xgb, param_grid_xgb, cv=5, n_jobs=-1, scoring='neg_mean_squared_error', verbose=1)
+grid_xgb.fit(X_train, y_train)
 
-grid_search_xgb.fit(X_train, y_train)
-
-print("\n" + "="*40)
-print("RESULTS FOR XGBOOST (TABLE 2)")
+print("\nXGBoost Results")
 print("="*40)
-print("Optimal Hyperparameters Found:")
-print(grid_search_xgb.best_params_)
-print(f"Best cross-validation MSE: {-grid_search_xgb.best_score_:.4f}")
+print("Best params:", grid_xgb.best_params_)
+print(f"Best CV MSE: {-grid_xgb.best_score_:.4f}")
 print("="*40)
 
+```
