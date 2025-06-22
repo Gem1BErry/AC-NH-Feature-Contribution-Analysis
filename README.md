@@ -30,10 +30,18 @@ The research investigates:
 
 You can view the analysis process by reading the files below:
 
-- 🔹 [Preprocessing](src/preprocessing.md): Data cleaning, feature construction, and well-being score calculation  
+## How to Use
+
+
+- 🔹 [Preprocessing](src/preprocessing.md): Data cleaning and feature construction
+- 🔹 [EDA](src/EDA.md): Exploratory data analysis and initial data inspection
+- 🔹 [Tuning](src/tuning.md): Hyperparameter tuning for Random Forest and XGBoost models  
+- 🔹 [Regression Diagnostics](src/regression%20diagnostics.md): Assessing model assumptions and performance diagnostics  
 - 🔹 [Modeling](src/modeling.md): Training and evaluating multiple regression models  
 - 🔹 [SHAP](src/shap.md): Feature importance analysis using SHAP values  
-- 🔹 [HLM](src/hlm_gender_age.md): Subgroup analysis using Hierarchical Linear Modeling
+- 🔹 [Subgroup Analysis](src/subgroup_analysis.md): Analyzing effects within demographic subgroups  
+
+
 
 All visualizations and model outputs can be found in the `results/` folder.
 
