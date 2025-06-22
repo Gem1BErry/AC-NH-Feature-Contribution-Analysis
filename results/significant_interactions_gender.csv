@@ -1,5 +1,0 @@
-Variable,Coefficient,p-value
-competence_capable:GenderGroup[T.Male],-0.106,0.033
-competence_competent:GenderGroup[T.Male],0.101,0.026
-related_not_close:GenderGroup[T.Non-binary/Prefer not to say],0.229,0.02
-extrinsic_escape:GenderGroup[T.Non-binary/Prefer not to say],0.175,0.045
