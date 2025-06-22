@@ -1,10 +1,3 @@
-```python
-import pandas as pd
-import numpy as np
-from sklearn.experimental import enable_iterative_imputer
-from sklearn.impute import IterativeImputer
-from sklearn.tree import DecisionTreeRegressor
-
 # Aggregate gameplay duration per player and convert to hours
 gt = pd.read_csv('telem_data.txt', sep='\t')[['hashed_id', 'duration']]
 gt = gt.rename(columns={'hashed_id': 'code', 'duration': 'Hours'})
