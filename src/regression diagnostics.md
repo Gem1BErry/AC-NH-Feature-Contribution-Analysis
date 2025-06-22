@@ -2,7 +2,7 @@
 # Add a constant (intercept) to the predictors, which is required for OLS
 X_const = sm.add_constant(X)
 
-# --- 1. Fit a Standard OLS Model ---
+# Fit a Standard OLS Model
 # This 'vanilla' OLS model is used specifically to generate the residuals for diagnostics.
 # We do NOT use robust standard errors here, because the goal is to *find* the problems.
 model_for_diagnostics = sm.OLS(y, X_const).fit()
@@ -14,7 +14,7 @@ fitted_values = model_for_diagnostics.fittedvalues
 print("OLS model fitted successfully for diagnostic purposes.")
 print("-" * 50)
 
-# --- 2. Generate Diagnostic Plots ---
+# Generate Diagnostic Plots
 
 # Create a figure to hold both plots for a clean presentation
 plt.figure(figsize=(8, 12))
@@ -38,7 +38,7 @@ plt.ylabel('Residuals', fontsize=12)
 plt.tight_layout()
 plt.show()
 
-# --- 3. Calculate and Display VIF for Multicollinearity ---
+# Calculate and Display VIF for Multicollinearity
 
 print("\n" + "="*50)
 print("Calculating Variance Inflation Factor (VIF)...")
